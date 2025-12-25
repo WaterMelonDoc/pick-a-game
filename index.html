@@ -48,7 +48,7 @@
 
         .option-btn {
             flex: 1;
-            min-height: 180px; /* Reduced size as requested */
+            min-height: 180px;
             border: none;
             border-radius: 12px;
             cursor: pointer;
@@ -164,10 +164,10 @@
         <button id="nextBtn" class="next-btn" onclick="renderQuestion()">NEXT CHALLENGE →</button>
         
         <div class="footer-tools">
-    <span class="suggest-link" onclick="toggleModal(true)">Suggest a Question</span>
-    <br><br>
-    <a href="privacy.html" style="color: rgba(255,255,255,0.2); font-size: 0.7rem; text-decoration: none;">Privacy Policy</a>
-</div>
+            <span class="suggest-link" onclick="toggleModal(true)">Suggest a Question</span>
+            <br><br>
+            <a href="privacy.html" style="color: rgba(255,255,255,0.2); font-size: 0.7rem; text-decoration: none;">Privacy Policy</a>
+        </div>
 
     <div id="suggestModal" class="modal">
         <div class="modal-content">
@@ -182,8 +182,10 @@
     </div>
 
     <script>
+        // --- CLICK COUNTER FOR ADS ---
+        let clickCount = 0;
+
         const database = [
-            // BATCH 1
             { a: "Pause time (10 mins/day)", b: "Rewind 60s (unlimited)" },
             { a: "Know exact date of death", b: "Live 10 years longer" },
             { a: "Famous but judged", b: "Unknown but respected" },
@@ -214,7 +216,6 @@
             { a: "Famous for talent", b: "Famous for ideas" },
             { a: "Only eat sweet food", b: "Only eat savory food" },
             { a: "See the future", b: "Change the past" },
-            // BATCH 2
             { a: "Unlimited confidence", b: "Unlimited discipline" },
             { a: "World without crime", b: "World without poverty" },
             { a: "Great at starting", b: "Great at finishing" },
@@ -252,7 +253,6 @@
             { a: "Have your dream body", b: "Have your dream mind" },
             { a: "Be a night person", b: "Be a morning person" },
             { a: "Famous in lifetime", b: "Legendary after death" },
-            // BATCH 3
             { a: "Always feel motivated", b: "Always feel content" },
             { a: "Unlimited imagination", b: "Unlimited logic" },
             { a: "Live with certainty", b: "Live with wonder" },
@@ -289,10 +289,18 @@
         }
 
         function handleChoice(num) {
+            clickCount++;
+
+            // --- HIGH INCOME DIRECT LINK LOGIC ---
+            // Triggers every 4 clicks
+            if (clickCount % 4 === 0) {
+                window.open("PASTE_YOUR_DIRECT_LINK_HERE", "_blank");
+            }
+
             document.getElementById('btn1').disabled = true;
             document.getElementById('btn2').disabled = true;
 
-            const p1 = Math.floor(Math.random() * 51) + 25; // Random stats 25-75%
+            const p1 = Math.floor(Math.random() * 51) + 25; 
             const p2 = 100 - p1;
 
             document.getElementById('perc1').innerText = p1 + "%";
@@ -313,7 +321,4 @@
         renderQuestion();
     </script>
 </body>
-
 </html>
-
-
