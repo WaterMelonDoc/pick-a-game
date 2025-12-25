@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PickOne | Red vs Blue Challenge</title>
+    <style>
+        :root {
+            --blue-gradient: linear-gradient(145deg, #00c6ff, #0072ff);
+            --red-gradient: linear-gradient(145deg, #ff416c, #ff4b2b);
+            --bg: #0f172a;
+        }
+
+        body {
+            font-family: 'Arial Black', Gadget, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1e30 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .options-wrapper {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .option-btn {
+            flex: 1;
+            min-height: 180px; /* Reduced size as requested */
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            padding: 15px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: white;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.4);
+            position: relative;
+        }
+
+        .blue-btn { background: var(--blue-gradient); border-bottom: 4px solid #0056b3; }
+        .red-btn { background: var(--red-gradient); border-bottom: 4px solid #b33217; }
+
+        .option-btn:hover { transform: translateY(-3px); filter: brightness(1.1); }
+        .option-btn:active { transform: translateY(1px); }
+
+        .percentage {
+            font-size: 2rem;
+            margin-bottom: 8px;
+            display: none;
+        }
+
+        .next-btn {
+            background: white;
+            color: #0f172a;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: none;
+            margin-top: 10px;
+        }
+
+        .footer-tools { margin-top: 30px; }
+        .suggest-link {
+            color: rgba(255,255,255,0.3);
+            font-size: 0.75rem;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: #1e1e30;
+            padding: 25px;
+            border-radius: 15px;
+            width: 85%;
+            max-width: 350px;
+            border: 1px solid #333;
+        }
+        .modal-content input {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 5px;
+            border: 1px solid #333;
+            background: #0f172a;
+            color: white;
+            box-sizing: border-box;
+        }
+        .modal-submit {
+            background: #00c6ff;
+            color: white;
+            border: none;
+            padding: 10px;
+            width: 100%;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 650px) {
+            .options-wrapper { flex-direction: column; }
+            .option-btn { min-height: 140px; }
+            h1 { font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Would You Rather?</h1>
+        
+        <div class="options-wrapper">
+            <button id="btn1" class="option-btn blue-btn" onclick="handleChoice(1)">
+                <div id="perc1" class="percentage">0%</div>
+                <span id="text1">Loading...</span>
+            </button>
+
+            <button id="btn2" class="option-btn red-btn" onclick="handleChoice(2)">
+                <div id="perc2" class="percentage">0%</div>
+                <span id="text2">Loading...</span>
+            </button>
+        </div>
+
+        <button id="nextBtn" class="next-btn" onclick="renderQuestion()">NEXT CHALLENGE →</button>
+        
+        <div class="footer-tools">
+            <span class="suggest-link" onclick="toggleModal(true)">Suggest a Question</span>
+        </div>
+    </div>
+
+    <div id="suggestModal" class="modal">
+        <div class="modal-content">
+            <h2 style="margin:0 0 15px 0; font-size: 1.2rem;">Suggest a Dilemma</h2>
+            <form action="https://formspree.io/f/mpqavzgy" method="POST">
+                <input type="text" name="OptionA" placeholder="Option Blue..." required>
+                <input type="text" name="OptionB" placeholder="Option Red..." required>
+                <button type="submit" class="modal-submit">Send to Admin</button>
+            </form>
+            <p style="font-size:0.7rem; margin-top:15px; cursor:pointer; opacity:0.5" onclick="toggleModal(false)">[ Cancel ]</p>
+        </div>
+    </div>
+
+    <script>
+        const database = [
+            // BATCH 1
+            { a: "Pause time (10 mins/day)", b: "Rewind 60s (unlimited)" },
+            { a: "Know exact date of death", b: "Live 10 years longer" },
+            { a: "Famous but judged", b: "Unknown but respected" },
+            { a: "Read minds (always on)", b: "Invisible (1 hr/day)" },
+            { a: "Win $1,000,000 now", b: "$10,000/month for life" },
+            { a: "Live without music", b: "Live without movies/shows" },
+            { a: "Always speak your mind", b: "Always know when someone lies" },
+            { a: "Have perfect memory", b: "Forget anything on command" },
+            { a: "Travel anywhere instantly", b: "Travel to any time (once)" },
+            { a: "Smartest in the room", b: "Most charismatic in the room" },
+            { a: "Unlimited free time", b: "Unlimited money (no time)" },
+            { a: "Relive best day forever", b: "Erase worst day completely" },
+            { a: "Control fire", b: "Control water" },
+            { a: "Never feel fear", b: "Never feel anger" },
+            { a: "Talk to animals", b: "Understand all languages" },
+            { a: "Always 10 mins late", b: "Always 20 mins early" },
+            { a: "Live on tropical island", b: "Live in snowy mountains" },
+            { a: "Have super strength", b: "Have super speed" },
+            { a: "Be incredibly lucky", b: "Be incredibly skilled" },
+            { a: "Lose phone forever", b: "Lose wallet forever" },
+            { a: "Know how everything works", b: "Know why everything happens" },
+            { a: "Be able to fly", b: "Breathe underwater" },
+            { a: "Never need sleep", b: "Never need food" },
+            { a: "Have your dream job", b: "Never have to work again" },
+            { a: "No social media", b: "No streaming platforms" },
+            { a: "One true best friend", b: "Many good friends" },
+            { a: "Always be calm", b: "Always be motivated" },
+            { a: "Famous for talent", b: "Famous for ideas" },
+            { a: "Only eat sweet food", b: "Only eat savory food" },
+            { a: "See the future", b: "Change the past" },
+            // BATCH 2
+            { a: "Unlimited confidence", b: "Unlimited discipline" },
+            { a: "World without crime", b: "World without poverty" },
+            { a: "Great at starting", b: "Great at finishing" },
+            { a: "Always get the truth", b: "Always get what you want" },
+            { a: "Be feared", b: "Be admired" },
+            { a: "Lose all your photos", b: "Lose all your messages" },
+            { a: "Stop aging at 30", b: "Reset your life once" },
+            { a: "Have perfect health", b: "Have perfect happiness" },
+            { a: "Be rich but bored", b: "Be broke but fulfilled" },
+            { a: "Futuristic city", b: "Ancient civilization" },
+            { a: "Always win arguments", b: "Always avoid conflicts" },
+            { a: "Control your dreams", b: "Never have nightmares" },
+            { a: "One skill at mastery", b: "Many skills at average" },
+            { a: "Be the leader", b: "Be the mastermind (hidden)" },
+            { a: "Respected for honesty", b: "Liked for kindness" },
+            { a: "Live without regrets", b: "Live without expectations" },
+            { a: "Unlimited creativity", b: "Unlimited focus" },
+            { a: "Teleport objects", b: "Duplicate objects" },
+            { a: "Never feel pain", b: "Never feel sadness" },
+            { a: "Know the right choice", b: "Be brave enough to choose" },
+            { a: "Life documented publicly", b: "Life completely private" },
+            { a: "Famous online", b: "Influential offline" },
+            { a: "Live fast and intensely", b: "Live slow and peacefully" },
+            { a: "Always be understood", b: "Always be listened to" },
+            { a: "Unlimited patience", b: "Unlimited courage" },
+            { a: "Known for intelligence", b: "Known for wisdom" },
+            { a: "Have a clear destiny", b: "Have complete freedom" },
+            { a: "Relive memories vividly", b: "Erase memories selectively" },
+            { a: "Admired from afar", b: "Loved up close" },
+            { a: "No fear of failure", b: "No fear of rejection" },
+            { a: "Genius in science", b: "Genius in art" },
+            { a: "Remembered for kindness", b: "Remembered for impact" },
+            { a: "Live without limits", b: "Live without expectations" },
+            { a: "Control the weather", b: "Control gravity" },
+            { a: "Have your dream body", b: "Have your dream mind" },
+            { a: "Be a night person", b: "Be a morning person" },
+            { a: "Famous in lifetime", b: "Legendary after death" },
+            // BATCH 3
+            { a: "Always feel motivated", b: "Always feel content" },
+            { a: "Unlimited imagination", b: "Unlimited logic" },
+            { a: "Live with certainty", b: "Live with wonder" },
+            { a: "Always know purpose", b: "Always discover new purpose" },
+            { a: "Master any instrument", b: "Master any sport" },
+            { a: "Never feel jealousy", b: "Never feel regret" },
+            { a: "Respected for strength", b: "Respected for compassion" },
+            { a: "Live for achievements", b: "Live for experiences" },
+            { a: "Always trust logic", b: "Always trust intuition" },
+            { a: "Live with structure", b: "Live with spontaneity" },
+            { a: "Meaningful life", b: "Exciting life" },
+            { a: "Remembered as a thinker", b: "Remembered as a doer" },
+            { a: "Always seek growth", b: "Always protect balance" },
+            { a: "Live for inner peace", b: "Live for impact" },
+            { a: "Always stay ambitious", b: "Always stay content" },
+            { a: "Live for meaning", b: "Live for mastery" },
+            { a: "Fearless of future", b: "Grateful for present" }
+        ];
+
+        let currentQuestion = {};
+
+        function renderQuestion() {
+            document.getElementById('nextBtn').style.display = 'none';
+            document.getElementById('perc1').style.display = 'none';
+            document.getElementById('perc2').style.display = 'none';
+            document.getElementById('btn1').disabled = false;
+            document.getElementById('btn2').disabled = false;
+            document.getElementById('btn1').style.opacity = '1';
+            document.getElementById('btn2').style.opacity = '1';
+
+            currentQuestion = database[Math.floor(Math.random() * database.length)];
+            document.getElementById('text1').innerText = currentQuestion.a;
+            document.getElementById('text2').innerText = currentQuestion.b;
+        }
+
+        function handleChoice(num) {
+            document.getElementById('btn1').disabled = true;
+            document.getElementById('btn2').disabled = true;
+
+            const p1 = Math.floor(Math.random() * 51) + 25; // Random stats 25-75%
+            const p2 = 100 - p1;
+
+            document.getElementById('perc1').innerText = p1 + "%";
+            document.getElementById('perc2').innerText = p2 + "%";
+            document.getElementById('perc1').style.display = 'block';
+            document.getElementById('perc2').style.display = 'block';
+
+            if(num === 1) document.getElementById('btn2').style.opacity = '0.3';
+            else document.getElementById('btn1').style.opacity = '0.3';
+
+            document.getElementById('nextBtn').style.display = 'inline-block';
+        }
+
+        function toggleModal(val) {
+            document.getElementById('suggestModal').style.display = val ? 'flex' : 'none';
+        }
+
+        renderQuestion();
+    </script>
+</body>
+</html>
